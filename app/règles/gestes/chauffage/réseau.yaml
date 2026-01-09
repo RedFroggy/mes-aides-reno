@@ -1,0 +1,116 @@
+chauffage . raccordement réseau:
+  titre: Raccordement réseau
+  somme:
+    - chaleur . montant
+    - froid . montant
+
+chauffage . raccordement réseau . chaleur:
+  par défaut: oui
+  titre: Raccordement à un réseau de chaleur
+  description: |
+    Système de chauffage urbain collectif qui permet d'acheminer de la chaleur par des canalisations souterraines.
+  description complète: |
+    Testez votre éligibilité sur [France Chaleur Urbaine](https://france-chaleur-urbaine.beta.gouv.fr).
+  note: |
+    Dans le cas d'un raccordement à un réseau de chaleur et de froid, le guide des aides ne dit pas si la prime est unique ou se voit etre doublée.
+chauffage . raccordement réseau . chaleur . montant:
+  applicable si:
+    une de ces conditions:
+      - MPR . non accompagnée . éligible
+      - CEE . conditions
+  somme:
+    - MPR . montant
+    - Coup de pouce . montant
+    - CEE . montant
+chauffage . raccordement réseau . chaleur . MPR:
+chauffage . raccordement réseau . chaleur . MPR . plafond: 1800 €
+chauffage . raccordement réseau . chaleur . MPR . montant:
+  applicable si: MPR . non accompagnée . éligible
+  variations:
+    - si: ménage . revenu . classe = 'très modeste'
+      alors: 1200 €
+    - si: ménage . revenu . classe = 'modeste'
+      alors: 800 €
+    - si: ménage . revenu . classe = 'intermédiaire'
+      alors: 400 €
+    - sinon: 0 €
+chauffage . raccordement réseau . chaleur . CEE:
+  code: BAR-TH-137
+  titre: Raccordement d'un bâtiment résidentiel à un réseau de chaleur
+  lien: https://www.ecologie.gouv.fr/sites/default/files/BAR-TH-137%20v%20A35-2%20%C3%A0%20compter%20du%2001-10-2020.pdf
+  technique: |
+    L'opération respecte les conditions cumulatives suivantes : 
+    - le bâtiment n'a jamais été raccordé à un réseau de chaleur dans le délai de cinq ans précédant la date de l'engagement de l'opération ; 
+    - le cas échéant, le ou les raccordements précédents n'ont pas fait l'objet d'une demande de certificats d'économies d'énergie.
+chauffage . raccordement réseau . chaleur . CEE . montant:
+  applicable si: CEE . conditions
+  produit:
+    - barème
+    - facteur correctif surface
+    - CEE . prix kWh Cumac
+  unité: €
+chauffage . raccordement réseau . chaleur . CEE . surface: logement . surface
+chauffage . raccordement réseau . chaleur . CEE . barème:
+  variations:
+    - si: CEE . région = 'H1'
+      alors: 48300
+    - si: CEE . région = 'H2'
+      alors: 40200
+    - si: CEE . région = 'H3'
+      alors: 29600
+chauffage . raccordement réseau . chaleur . CEE . facteur correctif surface:
+  variations:
+    - si: surface < 70
+      alors: 0.5
+    - si: surface < 90
+      alors: 0.7
+    - si: surface < 110
+      alors: 1
+    - si: surface < 130
+      alors: 1.1
+    - si: surface >= 130
+      alors: 1.6
+chauffage . raccordement réseau . chaleur . Coup de pouce:
+chauffage . raccordement réseau . chaleur . Coup de pouce . montant:
+  applicable si:
+    toutes ces conditions:
+      - CEE . projet . remplacement chaudière thermique
+      - CEE . conditions
+  rend non applicable: CEE . montant
+  variations:
+    - si:
+        une de ces conditions:
+          - ménage . revenu . classe = 'très modeste'
+          - ménage . revenu . classe = 'modeste'
+      alors: 700 €
+    - sinon: 450 €
+chauffage . raccordement réseau . chaleur . Coup de pouce . question: CEE . projet . remplacement chaudière thermique
+
+chauffage . raccordement réseau . froid:
+  par défaut: oui
+  titre: Raccordement à un réseau de froid
+  description: |
+    Système de refroidissement urbain collectif qui permet d'acheminer du froid par des canalisations souterraines.
+  description complète: |
+    Informez-vous et testez votre éligibilité sur [France Chaleur Urbaine](https://france-chaleur-urbaine.beta.gouv.fr/ressources/reseau-de-froid).
+
+    Il n'y a pas de prime coup de pouce CEE pour les réseaux de froid, contrairement au cas des réseaux de chaleur !
+  note: |
+    Dans le cas d'un raccordement à un réseau de chaleur et de froid, le guide des aides ne dit pas si la prime est unique ou se voit etre doublée.
+
+chauffage . raccordement réseau . froid . montant:
+  somme:
+    - MPR . montant
+
+chauffage . raccordement réseau . froid . MPR:
+chauffage . raccordement réseau . froid . MPR . plafond: 1800 €
+chauffage . raccordement réseau . froid . MPR . montant:
+  applicable si: MPR . non accompagnée . éligible
+  variations:
+    - si: ménage . revenu . classe = 'très modeste'
+      alors: 1200 €
+    - si: ménage . revenu . classe = 'modeste'
+      alors: 800 €
+    - si: ménage . revenu . classe = 'intermédiaire'
+      alors: 400 €
+    - sinon: 0 €

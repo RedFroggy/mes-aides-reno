@@ -1,0 +1,88 @@
+import rules from '@/app/règles/rules'
+import { capitalise0, formatValue } from 'publicodes'
+import { computeAideStatus } from './AmpleurSummary'
+
+const regexp = /aides locales \. (.+) \. montant$/
+
+export const findAidesLocales = (rules, engine) => {
+  const candidates = Object.entries(rules).filter(
+    ([dottedName, rule]) => dottedName.match(regexp) && rule.remplace,
+  )
+
+  const found = candidates
+    .map(([dottedName]) => engine.evaluate(dottedName))
+    .filter(
+      (evaluation) =>
+        evaluation.nodeValue > 0 || evaluation.nodeValue === false,
+    )
+
+  try {
+    return found.map((evaluation) => {
+      const aideLocalePart = evaluation.dottedName.match(regexp)[1]
+      const place = aideLocalePart.split(' . ')[0]
+      const rule = rules[evaluation.dottedName],
+        titre = rule.titre,
+        name = capitalise0(
+          `${place} ${titre ? ` : ${rule.titre}` : ''}` ||
+            aideLocalePart.split(' . ').join(' - '),
+        )
+      return {
+        ...evaluation,
+        name,
+        level: rules[evaluation.dottedName].remplace,
+      }
+    })
+  } catch (e) {
+    console.error('Could not derive the name of the aide locale')
+    return []
+  }
+}
+
+export function useAides(engine, situation) {
+  const parcoursAide = situation["parcours d'aide"] || 'rénovation énergétique'
+  const list = rules[
+    "parcours d'aide . " + parcoursAide.replaceAll('"', '')
+  ].dispositifs.map((dottedName) => {
+    const rule = rules[dottedName]
+    const split = dottedName.split(' . montant')
+
+    if (split.length > 1) {
+      const parentRule = rules[split[0]]
+      return {
+        ...rule,
+        dottedName,
+        baseDottedName: split[0],
+        icône: parentRule.icône,
+        marque: parentRule.marque,
+        'complément de marque': parentRule['complément de marque'],
+        type: parentRule['type'],
+      }
+    }
+    return { ...rule, dottedName, baseDottedName: dottedName }
+  })
+
+  const aides = list.map((aide) => {
+    const cond = aide.dottedName.replace('montant', 'condition éligibilité')
+    const engineSituation = engine.setSituation(situation)
+    const evaluation = engineSituation.evaluate(
+      rules[cond] ? cond : aide.dottedName,
+    )
+
+    const evaluationValue = engineSituation.evaluate(aide.dottedName)
+
+    const marque2 = aide.dottedName.startsWith('aides locales')
+      ? findAidesLocales(rules, engine)
+          .map((aide) => aide.name)
+          .join(', ')
+      : aide['complément de marque']
+
+    return {
+      ...aide,
+      evaluation,
+      value: formatValue(evaluationValue, { precision: 0 }),
+      status: computeAideStatus(evaluation),
+      'complément de marque': marque2,
+    }
+  })
+  return aides
+}

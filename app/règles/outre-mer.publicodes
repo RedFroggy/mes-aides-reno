@@ -1,0 +1,45 @@
+outre-mer:
+  une de ces conditions:
+    - DROM
+    - COM
+
+outre-mer . DROM:
+  titre: Départements et Régions d’outre-mer
+  une de ces conditions:
+    - Guadeloupe
+    - Martinique
+    - Guyane
+    - La Réunion
+    - Mayotte
+outre-mer . COM:
+  titre: Collectivités d'outre-mer
+  une de ces conditions:
+    - logement . code région = '975' # Saint-Pierre-et-Miquelon
+    - logement . code région = '976' # Terres australes et antarctiques françaises
+    - logement . code région = '977' # Saint-Barthélemy (Antilles françaises)
+    - logement . code région = '978' # Saint-Martin (Antilles françaises)
+    - logement . code région = '986' # Wallis-et-Futuna
+    - logement . code région = '987' # Polynésie française
+    - logement . code région = '988' # Nouvelle-Calédonie, a un statut particulier, mais souvent classée comme COM
+
+outre-mer . Mayotte: logement . code région = '06'
+outre-mer . La Réunion: logement . code région = '04'
+outre-mer . Guyane: logement . code région = '03'
+outre-mer . Martinique: logement . code région = '02'
+outre-mer . Guadeloupe: logement . code région = '01'
+
+outre-mer . zone Guyane:
+  par défaut: "'littoral'"
+  question: Le logement est en Guyane, de quel type de zone s'agit-il ?
+  une possibilité parmi:
+    possibilités:
+      - littoral
+      - intérieur accès route
+      - intérieur accès fleuve
+
+outre-mer . zone Guyane . littoral:
+  valeur: "'littoral'"
+outre-mer . zone Guyane . intérieur accès route:
+  valeur: "'intérieur accès route'"
+outre-mer . zone Guyane . intérieur accès fleuve:
+  valeur: "'intérieur accès fleuve'"

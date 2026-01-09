@@ -1,0 +1,97 @@
+PAR:
+  notes: |
+    Nous ignorons pour l'instant le <a href="https://www.economie.gouv.fr/particuliers/pret-avance-renovation-energetique-financement-travaux" target="_blank">PAR "pas plus"</a> original, qui ne garantit pas un taux zéro, et qui n'est donc pas à propremement parler une aide de l'État.
+  marque: Prêt avance rénovation
+  complément de marque: '0 %'
+  type: 'prêt'
+  icône: 'pam-plus-bleu.svg'
+  titre: Prêt avance rénovation à taux zéro
+  lien: https://www.service-public.fr/particuliers/actualites/A17657
+  conditions éligibilités: |
+    Pour bénéficier du plafond maximum à 50 000€, ce prêt est soumis à audit énergétique et gain de performance :
+
+    - Un audit énergétique du logement est réalisé avant le démarrage des travaux
+    - Les travaux engagés à la suite de cet audit doivent vous permettre d'atteindre au minimum une classe DPE E en énergie et un gain énergétique d'au moins 35 %.  
+    - Les travaux doivent concerner votre résidence principale, construite depuis plus de 2 ans.
+    - Vous devez faire réaliser les travaux par un professionnel RGE.
+
+  comment faire: |
+    Assurez-vous d'abord que vos travaux de rénovation <a href="https://www.service-public.fr/particuliers/vosdroits/F38425" target="_blank" title="soient couverts - nouvelle fenêtre">
+                    soient couverts</a> par ce dispositif.
+
+    Dans le cas d'un dossier MaPrimeRénov' parcours accompagné, ce sera probablement le cas.
+
+    > La liste des établissements distribuant le prêt avance rénovation ne portant pas intérêt n'est pas encore disponible. 
+
+    Découvrir <a href="https://www.service-public.fr/particuliers/vosdroits/F38425" target="_blank" title="la démarche étape par étape - nouvelle fenêtre">la démarche étape par étape</a>.
+  montant: |
+    Jusqu'à 50 000 € d'emprunt pour une rénovation d'ampleur : viser un DPE E au minimum et un gain énergétique de 35%.
+  description: |
+    Le prêt avance rénovation à taux zéro (PAR+) est un prêt hypothécaire permettant aux propriétaires occupants de financer des travaux de rénovation énergétique.
+
+    Son remboursement s’effectue in fine, c'est-à-dire en une seule fois, lors de la revente du bien ou au moment de la succession.
+  explication: |
+    Pendant les 10 premières années du prêt, l'État prend en charge l'intégralité des intérêts. À l'expiration de cette période, des intérêts au taux fixé librement par l'établissement prêteur au moment de la signature du contrat de prêt seront appliqués.
+          
+    L'établissement prêteur peut décider de verser le prêt en une ou plusieurs fois sur la base du descriptif et des devis détaillés des travaux à réaliser, ou bien à la fin des travaux.
+PAR . conditions:
+PAR . condition éligibilité:
+  valeur:
+    toutes ces conditions:
+      - vous . propriétaire . condition
+      - logement . propriétaire occupant
+      - conditions . résidence principale
+      - conditions . ancienneté
+      - conditions . revenu
+
+PAR . conditions . revenu:
+  description: |
+    Vos revenus et ceux de l'ensemble des personnes qui occupent le logement sont pris en compte.
+
+    Les revenus retenus sont les revenus fiscaux de référence (RFR) de l'année N-1 (soit 2023 pour les demandes faites en 2024) précédant la date d'émission de l'offre de prêt. Ces revenus s'appuient sur l'avis d'impôt sur le revenu ou l'avis de situation déclarative à l'impôt sur le revenu si vous êtes non imposable.
+
+    Si ces documents ne sont pas disponibles lors de la demande de prêt, c'est l'année N-2 (soit 2022 pour les demandes faites en 2024) qui est retenue.
+  valeur:
+    une de ces conditions:
+      - ménage . revenu . classe = 'très modeste'
+      - ménage . revenu . classe = 'modeste'
+
+PAR . conditions . résidence principale:
+  valeur: logement . résidence principale
+  description: |
+    Les travaux doivent être réalisés dans un logement à usage de résidence principale. Logement occupé au moins 8 mois par an sauf obligation professionnelle, raison de santé ou cas de force majeureLogement occupé au moins 8 mois par an sauf obligation professionnelle, raison de santé ou cas de force majeure situé en France métropolitaine. 
+
+    Si le logement ne fait pas encore l'objet d'une telle utilisation, vous devez vous engager à utiliser effectivement le logement en tant que résidence principale dans les 6 mois qui suivent la remise des factures à l'établissement ou société qui finance votre prêt.
+
+    > **À savoir**
+    > Des contrôles sont effectués a postériori pour vérifier que la condition d'occupation du logement en tant que résidence principale est bien respectée dans le délai requis.
+
+PAR . conditions . ancienneté:
+  description: |
+    Pour bénéficier du prêt, vous devez être propriétaire occupant d'un logement construit il y a plus de 2 ans à la date du début des travaux faisant l'objet du prêt.
+
+    Le logement ne **peut pas** être en cours d’acquisition au moment de la demande de prêt.
+  valeur: logement . au moins 2 ans
+
+PAR . montant:
+  titre: Montant du pret avance rénovation 0 %
+  applicable si: condition éligibilité
+  variations:
+    - si: logement . type travaux = "parois vitrées"
+      alors: 7000 €
+    - si: logement . type travaux = "un poste"
+      alors: 15000 €
+    - si: logement . type travaux = "deux postes"
+      alors: 25000 €
+    - si: logement . type travaux = "trois postes"
+      alors: 30000 €
+    - si: logement . type travaux = "assainissement"
+      alors: 10000 €
+    - si: logement . type travaux = "performance énergétique globale"
+      alors: 50000 €
+    - si: MPR . accompagnée . condition éligibilité
+      alors: 50000 €
+  par défaut: 50000 €
+    
+PAR . taux: 0 %
+PAR . durée: 10 ans

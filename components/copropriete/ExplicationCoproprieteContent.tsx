@@ -1,0 +1,371 @@
+'use client'
+
+import Link from 'next/link'
+import rules from '@/app/règles/rules'
+import {
+  encodeDottedName,
+  encodeSituation,
+} from '@/components/publicodes/situationUtils'
+import { formatNumberWithSpaces, roundToThousands } from '../utils'
+import MprCategory from '../MprCategory'
+import CalculatorWidget from '../CalculatorWidget'
+import Value from '../Value'
+import ExplicationsCoproIneligible from './ExplicationsCoproIneligible'
+import Badge from '@codegouvfr/react-dsfr/Badge'
+import Select from '@codegouvfr/react-dsfr/Select'
+import Input from '@codegouvfr/react-dsfr/Input'
+import { push } from '@socialgouv/matomo-next'
+import { formatValue } from 'publicodes'
+
+export default function ExplicationCoproprieteContent({
+  engine,
+  situation,
+  setSearchParams,
+  answeredQuestions,
+}) {
+  const engineSituation = engine.setSituation(situation)
+  const isEligibile = engineSituation.evaluate(
+    'copropriété . condition éligibilité',
+  ).nodeValue
+
+  let bonusFragile = null
+  let bonusSortiePassoire = null
+
+  if (isEligibile) {
+    // Si le montant des travaux n'est pas précisé, on l'estime
+    if (!situation['copropriété . montant travaux']) {
+      situation['copropriété . montant travaux'] = roundToThousands(
+        engine.evaluate('copropriété . montant travaux').nodeValue,
+      )
+    }
+    const evaluation = engine.setSituation(situation)
+    bonusFragile = evaluation.evaluate(
+      'copropriété . pourcentage copropriété fragile',
+    ).nodeValue
+    bonusSortiePassoire = evaluation.evaluate(
+      'copropriété . pourcentage sortie passoire',
+    ).nodeValue
+  }
+
+  const nom = situation['copropriété . nom']
+  const nomContent = nom ? nom + ' ' : null
+
+  const getValue = (dottedName) =>
+    formatValue(engineSituation.evaluate(dottedName), { precision: 0 })
+
+  return (
+    <>
+      {isEligibile ? (
+        <>
+          <div className="fr-mb-3v">
+            Votre copropriété {nomContent}est{' '}
+            <Badge noIcon severity="success">
+              éligible
+            </Badge>{' '}
+            au dispositif <strong>MaPrimeRénov' Copropriété</strong>.
+          </div>
+          <CalculatorWidget titleAs="h2">
+            <form id="storybook-form">
+              <fieldset
+                className="fr-fieldset fr-grid-row--between"
+                style={{
+                  alignItems: 'baseline',
+                }}
+                id="storybook-form-fieldset"
+                aria-labelledby="storybook-form-fieldset-legend storybook-form-fieldset-messages"
+              >
+                <div className="fr-fieldset__element fr-fieldset__element--inline">
+                  <Input
+                    nativeInputProps={{
+                      type: 'number',
+                      min: 1,
+                      step: 1,
+                      onChange: (e) => {
+                        const value =
+                          e.target.value === undefined ? 0 : e.target.value
+                        if (!Number.isInteger(parseInt(value))) return
+                        setSearchParams(
+                          encodeSituation({
+                            'copropriété . nombre de logements': value + '*',
+                          }),
+                          'replace',
+                          false,
+                        )
+                      },
+                      value: situation[
+                        'copropriété . nombre de logements'
+                      ]?.replaceAll('"', ''),
+                    }}
+                    label="Nombre de logements :"
+                  />
+                </div>
+                <div className="fr-fieldset__element fr-fieldset__element--inline">
+                  <Select
+                    nativeSelectProps={{
+                      onChange: (e) =>
+                        setSearchParams(
+                          encodeSituation({
+                            'copropriété . gain énergétique':
+                              e.target.value + '*',
+                          }),
+                          'replace',
+                          false,
+                        ),
+                      value: situation[
+                        'copropriété . gain énergétique'
+                      ].replaceAll('"', "'"),
+                    }}
+                    label="Gain énergétique :"
+                  >
+                    {rules['copropriété . gain énergétique'][
+                      'une possibilité parmi'
+                    ]['possibilités']
+                      .slice(1, 3)
+                      .map((i) => (
+                        <option
+                          key={i}
+                          value={
+                            rules['copropriété . gain énergétique . ' + i]
+                              .valeur
+                          }
+                        >
+                          {rules['copropriété . gain énergétique . ' + i].titre}
+                        </option>
+                      ))}
+                  </Select>
+                </div>
+                <div className="fr-fieldset__element fr-fieldset__element--inline">
+                  <Input
+                    label="Votre budget travaux (HT) :"
+                    nativeInputProps={{
+                      pattern: '\\d+',
+                      type: 'text',
+                      inputMode: 'numeric',
+                      value: situation['copropriété . montant travaux']
+                        ? formatNumberWithSpaces(
+                            situation['copropriété . montant travaux'],
+                          )
+                        : 0,
+                      onChange: (e) => {
+                        const price = e.target.value.replace(/\s/g, '')
+                        const invalid =
+                          price != '' && (isNaN(price) || price < 0)
+                        if (invalid) return
+
+                        const valueToStore = price === '' ? '0' : price;
+                        push([
+                          'trackEvent',
+                          'copropriété . montant travaux',
+                          'Interaction',
+                          'montant travaux ' + price,
+                        ])
+                        setSearchParams({
+                          [encodeDottedName('copropriété . montant travaux')]:
+                            valueToStore == '' ? undefined : valueToStore + '*',
+                        });
+                      },
+                    }}
+                    addon={
+                      <>
+                        €
+                        <span title="Hors taxes, soit hors TVA. En général, les travaux qui améliorent la performance énergétique sont taxés à 5,5 % de TVA">
+                          HT
+                        </span>
+                      </>
+                    }
+                  />
+                </div>
+              </fieldset>
+            </form>
+            <div className="fr-callout__text">
+              🥳 <strong>Bonne nouvelle</strong> : Vous êtes éligible à une aide
+              de{' '}
+              <Value
+                {...{
+                  engine,
+                  situation,
+                  dottedName: "copropriété . pourcentage d'aide",
+                }}
+              />{' '}
+              du coût de vos travaux avec un plafond de{' '}
+              <Value
+                {...{
+                  engine,
+                  situation,
+                  state: 'normal',
+                  dottedName:
+                    'copropriété . montant travaux . plafond par logement',
+                }}
+              />{' '}
+              par logement.
+              {(bonusSortiePassoire !== 0 || bonusFragile !== 0) &&
+                ' Ce pourcentage inclut '}
+              {bonusSortiePassoire !== 0 && (
+                <>
+                  <strong>{bonusSortiePassoire}%</strong> de bonus{' '}
+                  <em>"Sortie de passoire"</em>
+                </>
+              )}
+              {bonusFragile !== 0 && (
+                <>
+                  {bonusSortiePassoire ? ' et ' : ''}
+                  <strong>{bonusFragile}%</strong> de bonus{' '}
+                  <em>"Copropriété fragile ou en difficulté"</em>
+                </>
+              )}
+              {(bonusSortiePassoire !== 0 || bonusFragile !== 0) && '.'}
+            </div>
+            <div className="fr-callout__text fr-mt-5v">
+              Vous toucherez un total d'aides de :{' '}
+              <Value
+                {...{
+                  size: 'xl',
+                  state: 'success',
+                  engine,
+                  situation: situation,
+                  dottedName: 'copropriété . montant',
+                }}
+              />
+            </div>
+          </CalculatorWidget>
+          <div className="fr-callout">
+            <h2 className="fr-callout__title">Explications</h2>
+            <div className="fr-callout__text">
+              L'aide de l'état financera{' '}
+              <Value
+                {...{
+                  size: 'xl',
+                  state: 'normal',
+                  engine,
+                  situation,
+                  dottedName: "copropriété . pourcentage d'aide",
+                }}
+              />{' '}
+              du montant total de vos travaux. Ce pourcentage se décompose de la
+              manière suivante:
+              <ul>
+                <li>
+                  <Value
+                    {...{
+                      state: 'normal',
+                      engine,
+                      situation,
+                      dottedName: 'copropriété . pourcentage gain énergétique',
+                    }}
+                  />{' '}
+                  car votre gain énergétique est estimé à{' '}
+                  <strong>{getValue('copropriété . gain énergétique')}</strong>
+                </li>
+                <li>
+                  <Value
+                    {...{
+                      state: 'normal',
+                      engine,
+                      situation,
+                      dottedName: 'copropriété . pourcentage sortie passoire',
+                    }}
+                  />{' '}
+                  car{' '}
+                  {!bonusSortiePassoire
+                    ? 'vous ne bénéficieriez pas'
+                    : 'vous bénéficieriez'}{' '}
+                  du bonus <strong>"Sortie de passoire"</strong>
+                </li>
+                <li>
+                  <Value
+                    {...{
+                      state: 'normal',
+                      engine,
+                      situation,
+                      dottedName:
+                        'copropriété . pourcentage copropriété fragile',
+                    }}
+                  />{' '}
+                  car{' '}
+                  {!bonusFragile
+                    ? 'vous ne bénéficieriez pas'
+                    : 'vous bénéficieriez'}{' '}
+                  du bonus{' '}
+                  <strong>"Copropriété fragile ou en difficulté"</strong>
+                </li>
+              </ul>
+              Elle est plafonnée à{' '}
+              <strong>
+                {getValue(
+                  'copropriété . montant travaux . plafond par logement',
+                )}
+              </strong>{' '}
+              par logement. Pour votre copropriété de{' '}
+              <strong>{getValue('copropriété . nombre de logements')}</strong> ,
+              cela représente un plafond de{' '}
+              <strong>
+                {getValue('copropriété . montant travaux . plafond')}
+              </strong>
+              .
+            </div>
+          </div>
+          <div className="fr-callout fr-callout--blue-cumulus fr-icon-info-line">
+            <span className="fr-callout__title">Ce n'est pas tout!</span>
+            <div className="fr-callout__text">
+              Les copropriétaires sont potentiellement éligibles à{' '}
+              <Value
+                {...{
+                  size: 'xl',
+                  state: 'success',
+                  engine,
+                  situation,
+                  dottedName: 'copropriété . prime individuelle totale',
+                }}
+              />{' '}
+              d'aide supplémentaire.
+            </div>
+            <div className="fr-callout__text">
+              En effet, chaque copropriétaire peut bénéficier individuellement
+              d'une prime pouvant s'élever à{' '}
+              <Badge noIcon severity="success" className="fr-h3">
+                {rules['copropriété . prime individuelle']['par défaut']}
+              </Badge>{' '}
+              par logement en fonction de ses revenus.
+            </div>
+          </div>
+          <MprCategory
+            {...{
+              engine,
+              situation,
+              setSearchParams,
+              answeredQuestions,
+            }}
+          />
+        </>
+      ) : (
+        <>
+          <div className="fr-mb-3v">
+            Votre copropriété{' '}
+            <Badge noIcon severity="error">
+              n'est pas éligible
+            </Badge>{' '}
+            au dispositif <strong>MaPrimeRénov' Copropriété</strong>
+          </div>
+          <ExplicationsCoproIneligible {...{ situation, engine }} />
+          <div className="fr-callout fr-icon-info-line fr-callout--blue-cumulus">
+            <h3 className="fr-callout__title">Ce n'est pas fini!</h3>
+            <p className="fr-callout__text">
+              Les copropriétaires{' '}
+              <strong>peuvent être éligibles individuellement</strong> à
+              d'autres aides à la rénovation.
+              <br />
+              C'est pourquoi, nous vous invitons à refaire une simulation pour
+              avoir un aperçu de l'ensemble de vos aides.
+            </p>
+          </div>
+          <Link
+            className="fr-btn fr-icon-arrow-right-line fr-btn--icon-left"
+            href="/simulation"
+          >
+            Simulez l'ensemble de vos aides
+          </Link>
+        </>
+      )}
+    </>
+  )
+}

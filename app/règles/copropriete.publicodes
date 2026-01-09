@@ -1,0 +1,202 @@
+copropriété:
+  titre: MaPrimeRénov' Copropriété
+  description: |
+    L'aide MaPrimeRénov' Copropriété est réservée aux travaux effectués sur les parties communes de copropriétés et sur les parties privatives déclarées d’intérêt collectif.  
+
+    > Il s'agit par exemple d'isolation par l'extérieur des murs de l'immeuble, d'une isolation des combles, ou encore d'un changement de chauffage collectif.
+        
+    Ces travaux sont votés lors des assemblées générales de la copropriété. La prime est demandée par le syndic de copropriété au titre du syndicat des copropriétaires.  
+    La subvention est versée directement au syndicat de copropriétaires puis répartie selon la règle des tantièmes.  
+        
+    L'aide dépend du coût des travaux, de la situation de la copropriété et du nombre de logements. Ce simulateur vous aide à saisir ces données et vous donne un résultat chiffré que vous pourrez communiquer au reste des copropriétaires et au syndic.
+
+copropriété . id:
+  description: |
+    Cette question va déclencher une recherche dans le [registre national des copros](https://www.registre-coproprietes.gouv.fr).
+
+    **Vos données resteront confidentielles**, elles ne seront utilisées que pour obtenir le montant des aides à la rénovation.
+  question: Quelle est l'adresse de la copropriété ?
+  note: |
+    Sa valeur sera mise à "évitée" si l'utilisateur décide de passer cette question.
+
+copropriété . nom:
+  question: Quelle est le nom de la copropriété ?
+
+copropriété . nombre de lots principaux:
+  question: |
+    Combien de lots composent la copropriété ?
+
+    Il est question ici de "lots principaux" : les appartements, les bureaux professionnels, les commerces, etc; par opposition aux lots secondaires, les parkings, caves, etc.
+  note: |
+    Nous retenons le fait qu'il s'agisse de lots principaux grâce au document suivant : 
+    ["Instruction MPR Copro"](<https://www.anah.gouv.fr/sites/default/files/2023-09/instruction_mpr_copro_fusion.pdf#page=8>)
+  unité: lots
+
+copropriété . nombre de logements:
+  question: Combien de logements composent la copropriété ?
+  description: |
+    Nous appelons ici "logement" les lots à usage d'habitation.
+  suggestions:
+    10 logements: 10
+    30 logements: 30
+    60 logements: 60
+  unité: logements
+
+copropriété . montant travaux:
+  question: Quel est le montant HT estimé de travaux pour cette rénovation ?
+  par défaut:
+    produit:
+      - nombre de logements
+      - 10000€ # Nombre arbitraire pour le montant moyen des travaux par logement
+  unité: '€'
+copropriété . condition 15 ans:
+  titre: Construite il y a plus de 15 ans
+  question: La copropriété a-t-elle été construite il y a plus de 15 ans ?
+  par défaut: oui
+  formule: copropriété . id
+copropriété . condition résidence principale:
+  titre: Quota d'habitations principales
+  question:
+    texte: >
+      La copropriété a-t-elle au moins {{ pourcent }} de ses lots principaux ou de ses tantièmes dédiés à l'usage d'habitation principale ?
+    avec:
+      pourcent:
+        variations:
+          - si: copropriété . nombre de logements > 20
+            alors: 75 %
+          - sinon: 65 %
+  description: |
+    Si votre copropriété a une majorité de volets fermés la plupart de l'année, notamment hors saison estivale, il est probable qu'elle ne soit pas éligible à l'aide.
+
+    Un lot est dit principal s'il est un logement ou un commerce par exemple, et secondaire s'il est une cave ou un cellier.
+
+    Un lot est dit d'habitation principale s'il est l'habitation principale du propriétaire, ou d'un locataire en place.
+
+    Si la condition n'est pas satisfaite en comptant les lots, le calcul en tantième permet de pondérer la taille de certains logements par rapport à des lots commerciaux, ou par rapport à de petits lots mis en location saisonnière (donc qui ne sont pas considérés comme l'habitation principale de quelqu'un).
+
+  note: |
+
+    Nous notons une ambiguité sur le dénominateur du pourcentage : est-ce le nombre de lots principaux, ou le nombre de logements ?
+
+    D'après [ce document de 2023](https://www.anah.gouv.fr/sites/default/files/2023-09/instruction_mpr_copro_fusion.pdf#page=8), "Ne sont pas considérés comme lots d'habitation principale les locaux commerciaux, les bureaux". Nous comprenons qu'une copro avec plus de 25 ou 35 % de lots principaux de cet usage sont inéligibles d'office, sans même regarder le pourcentage des lots d'habitation qui sont habitations principales.
+
+    C'est aussi ce que l'on comprend sur [cette page](https://www.economiedenergie.fr/actualites/maprimerenov-experimente-de-nouveaux-criteres-pour-les-petites-coproprietes) qui dit "Les immeubles qui comptent au minimum 65% de lots d'habitation principale peuvent bénéficier de MaPrimeRénov’ Copropriété, contre 75% aujourd’hui. En effet, en centre-ville, les rez-de-chaussée sont souvent occupés par des commerces, à savoir de l’espace non résidentiel."
+
+    À l'inverse, le booléen "> 20" est bien calculé sur le nombre de logements, et non pas sur le nombre de lots principaux, comme en atteste la [délibération n° 2023-49 : art. 2](https://www.anah.gouv.fr/sites/default/files/2023-12/CA-du-6-decembre-2023_2.1.2_Deliberation-2023-49_Experimentation-petites-copros.pdf).
+  par défaut: oui
+
+copropriété . gain énergétique:
+  question: Quel est le gain énergétique envisagé dans le cadre de cette rénovation ?
+  une possibilité parmi:
+    possibilités:
+      - 'moins de 35 %'
+      - 'entre 35 % et 50 %'
+      - 'plus de 50 %'
+  description: Bien sûr, il y a peu de chance que vous ayez ce chiffre en tête, n'hésitez pas à faire plusieurs simulations.
+
+copropriété . gain énergétique . condition:
+  titre: Gain énergétique suffisant
+  une de ces conditions:
+    - gain énergétique = gain énergétique . entre 35 % et 50 %
+    - gain énergétique = gain énergétique . plus de 50 %
+
+copropriété . gain énergétique . moins de 35 %:
+  valeur: "'moins de 35 %'"
+  titre: moins de 35 %
+copropriété . gain énergétique . entre 35 % et 50 %:
+  valeur: "'entre 35 % et 50 %'"
+  titre: entre 35 % et 50 %
+copropriété . gain énergétique . plus de 50 %:
+  valeur: "'plus de 50 %'"
+  titre: plus de 50 %
+copropriété . pourcentage gain énergétique:
+  variations:
+    - si: gain énergétique = gain énergétique . entre 35 % et 50 %
+      alors: 30%
+    - si: gain énergétique = gain énergétique . plus de 50 %
+      alors: 45%
+
+copropriété . bonus sortie passoire:
+  question: Votre immeuble est-il classe F ou G et atteindra-t-il après rénovation à minima une classe D ?
+  par défaut: oui
+  description: |
+    Tout comme les logements individuels, les immeubles ont leur DPE dit "collectif". 
+
+    Si l'immeuble est une passoire énergétique, les copropriétaires pourront bénéficier d'un "bonus passoire" qui bonifie l'aide de l'État de 10 %.
+
+    Si vous ne connaissez pas cette information, n'hésitez pas à continuer avec la réponse qui vous semble le plus probable : par la suite [un diagnostic](https://www.service-public.fr/particuliers/vosdroits/F37504) pourra être voté par la copropriété.
+
+    👉️ Le DPE collectif est en train de devenir **obligatoire** selon le calendrier suivant : 
+      - le 1er janvier 2024 pour les copropriétés de plus de 200 lots
+      - le 1er janvier 2025 pour les copropriétés entre 50 et 200 lots
+      - le 1er janvier 2026 pour les copropriétés jusqu’à 50 lots.
+
+copropriété . pourcentage sortie passoire:
+  variations:
+    - si: bonus sortie passoire
+      alors: 10%
+    - sinon: 0%
+copropriété . bonus copropriété fragile:
+  question: Votre copropriété est-elle considérée comme fragile ou en difficulté ?
+  par défaut: oui
+  description: |
+    Une copropriété est considérée fragile ou en difficulté si:
+    - son taux d'impayés par rapport au budget à l'année N-2 est supérieur ou égal à 8 %  ; 
+    - ou si elle est située dans un quartier NPNRU (Nouveau programme national de renouvellement  urbain) ; 
+    - ou si elle correspond à la définition d'une copropriété en difficulté au sens de la délibération
+copropriété . pourcentage copropriété fragile:
+  variations:
+    - si: bonus copropriété fragile
+      alors: 20%
+    - sinon: 0%
+
+copropriété . pourcentage d'aide:
+  unité: '%'
+  somme:
+    - pourcentage gain énergétique
+    - pourcentage sortie passoire
+    - pourcentage copropriété fragile
+
+copropriété . condition éligibilité:
+  toutes ces conditions:
+    - vous . propriétaire . statut = 'copropriété'
+    - condition résidence principale
+    - condition 15 ans
+    - gain énergétique . condition
+    - est défini: bonus sortie passoire
+    - est défini: bonus copropriété fragile
+
+copropriété . montant:
+  applicable si: condition éligibilité
+  produit:
+    - montant travaux . plafonné
+    - pourcentage d'aide
+
+copropriété . montant travaux . plafonné:
+  valeur: montant travaux
+  plafond: plafond
+  description: |
+    C'est le montant des travaux qui est plafonné, et non pas le montant de l'aide.
+
+    > Guide des aides financières de l'Anah 2025-03
+    > L’ aide MaPrimeRénov’ Copropriété finance de 30 % à 45 % du montant des travaux selon l’ambition de rénovation énergétique (plafonné à un montant de travaux de 25 000 € par logement).
+
+copropriété . montant travaux . plafond:
+  produit:
+    - plafond par logement
+    - nombre de logements
+  unité: €
+copropriété . montant travaux . plafond par logement: 25000€
+copropriété . prime individuelle totale:
+  unité: €
+  produit:
+    - prime individuelle
+    - nombre de logements
+copropriété . prime individuelle:
+  par défaut: 3000 €
+  variations:
+    - si: ménage . revenu . classe = 'très modeste'
+      alors: 3000 €
+    - si: ménage . revenu . classe = 'modeste'
+      alors: 1500 €
+    - sinon: non

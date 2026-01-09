@@ -1,0 +1,851 @@
+simulation:
+  description: Sont ici définies les options de simulation. Ce ne sont en général pas des questions à poser à l'utilisateur, mais des choix d'interface à faire.
+
+# C'est la variable qui lance le simulateur principal mes aides réno
+# Cette variable doit déclencher toutes les questions d'éligibilité pertinentes, mais ces dernières sont ordonnées via simulationConfig*.ts
+aides:
+  variations:
+    - si:
+        toutes ces conditions:
+          - parcours d'aide = "rénovation énergétique"
+          - vous . propriétaire . statut = 'copropriété'
+      alors: copropriété . montant
+    - si:
+        toutes ces conditions:
+          - parcours d'aide = "rénovation énergétique"
+          - une de ces conditions:
+              - toutes ces conditions:
+                  - projet . définition = "travaux connus"
+                  - est défini: projet . définition . catégories travaux envisagées
+                  - est défini: projet . définition . travaux envisagés
+              - projet . définition = "travaux inconnus"
+      alors:
+        somme:
+          - ampleur . tous les dispositifs # ampleur.yaml
+          - MPR . non accompagnée . montant
+    - si: parcours d'aide = "autonomie"
+      alors: mpa . montant
+    - si: parcours d'aide = "sécurité salubrité"
+      alors: MPLD . montant
+
+ménage . revenu:
+  titre: Revenu fiscal de référence
+  question: Quel est votre revenu fiscal de référence ?
+  sous-titre: |
+    Le revenu fiscal de référence se trouve sur la première page de votre dernier <a href="https://www.service-public.fr/particuliers/vosdroits/F99" target="_blank" title="avis d'impôt sur le revenu - nouvelle fenêtre">avis&nbsp;d'impôt&nbsp;sur&nbsp;le&nbsp;revenu</a>.
+  bornes intelligentes: oui
+  description: |
+    Saisissez le revenu fiscal de référence des personnes composant votre ménage. 
+
+    Si ces dernières ont des avis d'imposition distincts, le montant à prendre en compte est la somme de leurs revenus fiscaux de référence.
+  unité: €
+  par défaut: 0 €
+
+vous:
+  titre: Votre situation
+
+vous . propriétaire:
+vous . propriétaire . statut:
+  question: Êtes-vous propriétaire ?
+  description: |
+
+    Pour bénéficier de MaPrimeRénov', la principale aide à la rénovation, il faut être dans l'une de ces situations:
+      - **Propriétaire occupant** (vous vivez dans votre logement)
+      - **Propriétaire bailleur** (un locataire vit dans votre logement)
+      - usufruitier
+      - titulaires (occupants et bailleurs) d'un droit réel conférant l'usage du bien 
+      - preneurs (occupants et bailleurs) d'un bail emphytéotique ou d'un bail à construction 
+      - propriétaires en indivision, si un représentant unique a signé l'[attestation](https://www.anah.gouv.fr/document/attestation-sur-l-honneur-du-representant-unique-de-l-indivision) sur l'honneur qui désigne le demandeur pour porter les travaux au nom de l'indivision.
+      
+
+    <br/>
+    Vous n'êtes pas éligible en tant que :
+    <ul>
+      <li>nu-propriétaire</li>
+      <li>personne morale (par exemple une société civile immobilière)</li>
+    </ul>
+  une possibilité parmi:
+    possibilités:
+      - 'propriétaire'
+      - 'acquéreur'
+      - 'non propriétaire'
+      - 'copropriété'
+  par défaut: "'propriétaire'"
+
+vous . propriétaire . statut . propriétaire:
+  valeur: "'propriétaire'"
+  titre: Je suis propriétaire
+vous . propriétaire . statut . acquéreur:
+  valeur: "'acquéreur'"
+  titre: Je m'apprête à acheter
+vous . propriétaire . statut . non propriétaire:
+  valeur: "'non propriétaire'"
+  titre: Je suis locataire
+vous . propriétaire . statut . copropriété:
+  valeur: "'copropriété'"
+  titre: Je représente une copropriété
+
+vous . propriétaire . condition:
+  titre: Propriétaire ?
+  formule:
+    une de ces conditions:
+      - statut = 'propriétaire'
+      - statut = 'acquéreur'
+
+vous . propriétaire . astuce:
+  type: notification
+  sévérité: information
+  formule: condition = non
+  description: |
+    Si vous êtes locataire, vous aurez peu ou pas d'aide à la rénovation. 
+
+    **Cependant**, n'hésitez pas à faire cette simulation comme si vous étiez propriétaire. Cela peut constituer une base de discussion factuelle intéressante : votre propriétaire n'est peut-être pas au courant des nouvelles aides.
+
+logement:
+  titre: Votre logement
+
+logement . type:
+  titre: Type de logement
+  question: Le logement est-il une maison ou un appartement ?
+  description: |
+    Par maison, nous entendons maison individuelle hors copropriété.
+  une possibilité parmi:
+    possibilités:
+      - 'maison'
+      - 'appartement'
+  maximum: "'maison'"
+  schema module: Optionnel.
+logement . type . maison:
+  valeur: "'maison'"
+  titre: Une maison
+logement . type . appartement:
+  valeur: "'appartement'"
+  titre: Un appartement
+
+logement . type . information copro:
+  type: notification
+  sévérité: information
+  formule: type = 'appartement'
+  description: |
+    De nombreuses aides sont disponibles pour les propriétaires d'appartements, notamment MaPrimeRénov'. 
+
+    Les travaux étant naturellement plus contraints que dans une maison individuelle, il existe aussi en parallèle un important dispositif d'aide pour votre copropriété. Les deux dispositifs, individuel et copro', se combinent.
+
+logement . surface:
+  titre: Surface habitable
+  question: Quelle est la surface habitable du logement ?
+  par défaut: 91 m2
+  description: |
+    « La surface habitable d'un logement est la surface de plancher construite, après déduction des surfaces occupées par les murs, cloisons, marches et cages d'escaliers, gaines, embrasures de portes et de fenêtres. Le volume habitable correspond au total des surfaces habitables ainsi définies multipliées par les hauteurs sous plafond.
+    Il n'est pas tenu compte de la superficie des combles non aménagés, caves, sous-sols, remises, garages, terrasses, loggias, balcons, séchoirs extérieurs au logement, vérandas, volumes vitrés prévus à l'article R. 155-1, locaux communs et autres dépendances des logements, ni des parties de locaux d'une hauteur inférieure à 1,80 mètre1 »
+
+    *Article R156-1 du Code de la construction et de l'habitation*
+
+    Source : <span style="word-break: break-all;">https://fr.wikipedia.org/wiki/Surface_habitable_(France)</span>
+  notes: |
+    Pour le calcul de la surface moyenne, voir la [documentation Nos Gestes Climat](https://nosgestesclimat.fr/documentation/parc-fran%C3%A7ais/surface-moyenne).
+  unité: m²
+  schema module: Optionnel. Utile pour les aides par geste seulement.
+logement . propriétaire occupant:
+  applicable si: vous . propriétaire . condition
+  question: Allez-vous vivre dans le logement à rénover (propriétaire occupant) ?
+  par défaut: non
+  note: |
+    Je pense que les aides qui se basent sur le booléen "propriétaire occupant" ne s'occupent pas du fait que le propriétaire soit occupant avant les travaux, mais seulement après. Ainsi cette formulation de la question permet de coller aussi bien aux propriétaires actuels qu'au acquéreurs.
+  description: |
+    Cette question nous aide à déterminer les aides qui vous sont applicables : certaines sont réservées aux propriétaires occupants, d'autres aux propriétaires bailleurs.
+
+    > Vous possédez plusieurs logements ? N'hésitez pas à faire plusieurs simulations dans plusieurs onglets de votre navigateur.
+
+logement . résidence principale:
+  description: |
+    Le logement à rénover **doit être une résidence principale**, la votre (propriétaire occupant) ou celle de votre locataire (vous êtes propriétaire bailleur).
+
+  une de ces conditions:
+    - résidence principale propriétaire
+    - résidence principale locataire
+
+logement . résidence principale propriétaire:
+  applicable si: logement . propriétaire occupant # seulement "propriétaire occupant" fait crasher le simulateur MPR
+  question: Le logement sera-t-il votre résidence principale ?
+  par défaut: oui
+  description: |
+    Pour qu'il soit votre résidence principale, vous devrez occuper le logement **au moins 8 mois par an** après la rénovation, et vous engager à ce qu'il le reste pendant un certain temps. 
+    La plupart des aides ne ciblent que les résidence principales, et excluent donc les résidences secondaires. 
+
+    Le logement pourra devenir la résidence principale d'une autre personne que vous, par exemple un locataire.
+
+logement . résidence principale locataire:
+  non applicable si: logement . propriétaire occupant # seulement "propriétaire occupant" fait crasher le simulateur MPR
+  question: Le logement sera-t-il la résidence principale du locataire ?
+  par défaut: oui
+  description: |
+    Pour qu'il soit résidence principale, quelqu'un devra occuper le logement **au moins 8 mois par an** après la rénovation, et vous devrez vous engager à ce qu'il le reste pendant un certain temps. 
+
+    La plupart des aides ne ciblent que les résidence principales, et excluent donc les résidences secondaires.
+
+logement . année de construction:
+  titre: Année de construction
+  question: De quelle année date la construction de votre logement ?
+  par défaut: 1950 # Au hasard, on n'a pas trouvé d'âge moyen
+  #bornes intelligentes: oui
+  suggestions:
+    : 1900
+    trente glorieuses: 1950
+    choc pétrolier: 1975
+    récent: 2000
+    neuf: 2020
+  schema module: Optionnel.
+
+logement . âge:
+  titre: Âge du logement
+  formule: 2024 - année de construction # TODO peut mieux faire, est-ce très imporant d'avoir les mois à ce stade ?
+
+  # Il faudrait pouvoir injecter cela dans la période de construction
+logement . période de construction calculée:
+  formule:
+    variations:
+      - si: âge < 2
+        alors: '"moins de 2 ans"'
+      - si: âge < 10
+        alors: '"moins de 10 ans"'
+      - si: âge < 15
+        alors: '"de 10 à 15 ans"'
+      - sinon: '"au moins 15 ans"'
+
+logement . période de construction:
+  par défaut: "'au moins 15 ans'"
+  question: De quand date la construction du logement à rénover ?
+  une possibilité parmi:
+    possibilités:
+      - moins de 2 ans
+      - de 2 à 10 ans
+      - de 10 à 15 ans
+      - au moins 15 ans
+
+logement . période de construction . au moins 15 ans:
+  valeur: "'au moins 15 ans'"
+  titre: au moins 15 ans
+logement . période de construction . de 10 à 15 ans:
+  valeur: "'de 10 à 15 ans'"
+  titre: de 10 à 15 ans
+logement . période de construction . de 2 à 10 ans:
+  valeur: "'de 2 à 10 ans'"
+  titre: de 2 à 10 ans
+logement . période de construction . moins de 2 ans:
+  valeur: "'moins de 2 ans'"
+  titre: moins de 2 ans
+
+logement . au moins 2 ans:
+  une de ces conditions:
+    - au moins 15 ans
+    - période de construction = 'de 2 à 10 ans'
+    - période de construction = 'de 10 à 15 ans'
+logement . au moins 10 ans:
+  une de ces conditions:
+    - période de construction = 'au moins 10 ans'
+    - logement . au moins 15 ans
+logement . au moins 15 ans:
+  une de ces conditions:
+    - période de construction = 'au moins 15 ans'
+
+  # Si l'on a besoin dans un second temps d'avoir l'âge exact
+  # âge >= 15
+  ## variations:
+  #TODO outre-mer :  MAR accompagné est réservée à un logement en France métropolitaine
+  #TODO question des mois
+  ## - si: outre-mer # TODO question : il n'y a pas de condition d'outre-mer pour MPR accompagné. C'est étrange, je me demande même si cette aide est éligible en outre-mer ?
+  ## alors: âge >= 2
+  ## - sinon:
+
+logement . type travaux:
+  question: Quel type de travaux souhaitez-vous réaliser
+  une possibilité parmi:
+    possibilités:
+      - 'type travaux . parois vitrées'
+      - 'type travaux . un poste'
+      - 'type travaux . deux postes'
+      - 'type travaux . trois postes'
+      - 'type travaux . performance énergétique globale'
+      - 'type travaux . assainissement'
+logement . type travaux . parois vitrées:
+  valeur: 'parois vitrées'
+  titre: 'une action de travaux concernant les parois vitrées'
+logement . type travaux . un poste:
+  valeur: 'un poste'
+  titre: 'une action de travaux hors parois vitrées'
+logement . type travaux . deux postes:
+  valeur: 'deux postes'
+  titre: 'un bouquet de 2 postes de travaux'
+logement . type travaux . trois postes:
+  valeur: 'trois postes'
+  titre: 'un bouquet de 3 postes de travaux ou plus'
+logement . type travaux . performance énergétique globale:
+  valeur: 'performance énergétique globale'
+  titre: "des travaux entrainant un gain énergétique d'au moins 35%"
+logement . type travaux . assainissement:
+  valeur: 'assainissement'
+  titre: 'un assainissement non collectif'
+
+ménage . personnes:
+  titre: La composition de votre ménage
+  question: Quelle est la composition de votre ménage ?
+  unité: personne
+  par défaut: 2 personne
+  suggestions:
+    seul.e: 1 personne
+    seul.e + enfant: 2 personne
+    couple: 2 personne
+    couple + enfant: 3 personne
+    couple + 2 enfants: 4 personne
+  description: |
+    Répondez pour votre ménage, pas le ménage occupant votre logement dans le cas où il serait en location.
+
+    La composition de votre ménage nous permet d'appliquer le bon barème de revenus : vos aides sont conditionnées à votre revenu, pas celui de vos locataires.
+
+ménage . personnes plus:
+  titre: Personnes de plus qu'un ménage de 5
+  formule: personnes - 5
+
+ménage . revenu . classe:
+  variations:
+    - si:
+        une de ces conditions:
+          - logement . propriétaire occupant
+          - toutes ces conditions:
+              - parcours d'aide = "autonomie"
+              - mpa . situation demandeur = "occupant"
+          - toutes ces conditions:
+              - parcours d'aide = "sécurité salubrité"
+              - MPLD . situation demandeur = "occupant"
+      alors:
+        variations:
+          - si: logement . région . IdF
+            alors: barème IdF
+          - sinon: barème
+    - sinon:
+        variations:
+          - si: ménage . région . IdF
+            alors: barème IdF
+          - sinon: barème
+
+logement . EPCI:
+  formule: commune
+  par défaut: '"242900314"'
+
+logement . code région:
+  formule: commune
+  par défaut: '"53"'
+  suggestions:
+    Bretagne: '"53"'
+    Pays de la Loire: '"52"'
+    IdF: "'11'"
+
+logement . département:
+  formule: commune
+  par défaut: '"Finistère"'
+
+logement . adresse:
+  titre: L'adresse du logement
+  question: Quelle est l'adresse du logement ?
+  sous-titre: Vous ne connaissez pas l'adresse ? Saisissez la commune ou le code postal.
+  description: Indiquez l'adresse complète du logement ou, si vous ne la connaissez pas encore, saisissez simplement la commune ou le code postal afin de permettre l'analyse de votre dossier.
+
+logement . coordonnees:
+  note: On stocke les coordonnées du logement sous la forme lat,lon afin de pouvoir déterminer son éligibilité au réseau de chaleur grâce à l'API France Chaleur Urbaine
+
+logement . commune:
+  formule: logement . adresse
+  titre: La commune du logement
+  question: Dans quelle commune se situe le logement ?
+  sous-titre: Renseignez bien l**adresse du logement à rénover**. Elle définit votre éligibilité aux aides.
+  par défaut: "'29200'"
+  schema module: Optionnel. Peut déclencher des aides. C'est le code INSEE, pas le code postal.
+
+logement . commune . nom:
+  schema module: Optionnel.
+  par défaut:
+    texte: Brest
+
+logement . code département: # Necessaire pour déterminer le module valeur verte
+  formule: commune # Juste pour appeler cette question, qui lui donnera sa valeur via l'UI
+  par défaut: '"35"'
+
+logement . région:
+
+logement . région . IdF: code région = "11"
+
+# logement . commune . denormandie: voir le fichier denormandie
+
+ménage:
+  titre: Votre ménage
+
+ménage . code région:
+  formule: commune # Juste pour appeler cette question, qui lui donnera sa valeur via l'UI
+  par défaut: '"53"' # La Bretagne, comme toute autre région non francilienne, ouvre l'éligibilité aux aides
+  suggestions:
+    Bretagne: '"53"'
+    Pays de la Loire: '"52"'
+    IdF: "'11'"
+
+ménage . code département: # Necessaire pour déterminer la zone climatique (et donc le montant des CEE)
+  formule: commune # Juste pour appeler cette question, qui lui donnera sa valeur via l'UI
+  par défaut: '"35"'
+  suggestions:
+    Ille-et-Villaine: '"35"'
+    Paris: '"75"'
+
+ménage . EPCI:
+  formule: commune
+  par défaut: '"242900314"' # Brest métropole
+
+ménage . département:
+  formule: commune
+  par défaut: '"Finistère"'
+
+ménage . commune:
+  non applicable si: logement . propriétaire occupant
+  titre: Votre commune
+  question: Dans quelle commune habitez-vous ?
+  sous-titre: Renseignez bien votre **adresse personnelle**. Elle définit votre éligibilité et le montant de l'aide.
+  par défaut: "'29200'"
+  description: |
+
+    Dans le cas où vous êtes propriétaire bailleur, c'est votre lieu de résidence principale qui détermine votre éligibilité et le montant de vos aides.
+
+    Cette question nous permet de déterminer votre région, un paramètre clef de l'éligibilité de l'aide.
+
+    > 🕵️ Les réponses que vous donnez à ce questionnaire *ne sont pas stockées* sur nos serveur, elles servent uniquement à calculer vos aides à la rénovation énergétique.
+
+ménage . commune . nom:
+  par défaut:
+    texte: Brest
+
+ménage . id ban:
+  titre: Identifiant base nationale des adresses (BAN)
+
+ménage . région:
+
+ménage . région . IdF: code région = "11"
+
+DPE:
+  titre: Diagnostic de Performance Énergétique
+
+DPE . actuel . passoire:
+  type: notification
+  sévérité: information
+  formule: actuel > 5
+  description: |
+    Votre logement est considéré comme une **passoire énergétique**. Pour le chauffer, il faut dépenser beaucoup d'énergie, ou bien émettre beaucoup de gaz à effet de serre.
+
+DPE . actuel . efficace:
+  type: notification
+  sévérité: information
+  formule: actuel < 3
+  description: |
+    Votre logement est classé A ou B, il est donc relativement efficace.
+
+    Vous n'êtes donc pas éligible à l'aide à la rénovation globale, car elle nécessite 2 sauts de DPE.
+
+DPE . actuel:
+  titre: Votre DPE actuel
+  question: Quel est le DPE actuel de votre logement ?
+  sous-titre: Vous avez un doute ? Sélectionnez la lettre qui vous semble la plus juste. Vous pourrez changer ce choix ensuite et comparer l’effet sur vos aides.
+  description: |
+    Le DPE, c'est le Diagnostic de Performance Énergétique de votre logement. 
+
+    Il mesure d'un côté l'énergie nécessaire pour y maintenir une température standard, et de l'autre l'empreinte climat associée. 
+
+    Le DPE est exprimé comme une note de A (très bon) à G (passoire thermique). 
+
+    Si votre logement n'a pas de DPE, ou s'il date d'avant septembre 2021, date de mise en place du nouveau DPE, <a href="https://www.economie.gouv.fr/particuliers/immobilier-diagnostic-performance-energetique-dpe" target="_blank" title="vous pouvez le faire réaliser - nouvelle fenêtre">vous pouvez le faire réaliser</a> pour un prix qui varie entre 120 et 300 €.
+
+    Cela dit, **n'hésitez pas à faire une simulation avec un DPE estimé** : aucune saisie faite sur Mes Aides Réno ne vous engage à quoi que ce soit. Vous pourrez obtenir une estimation de votre DPE en 2 clics avec le service <a href="https://particulier.gorenove.fr" target="_blank" title="Go Renov - nouvelle fenêtre">Go Renov</a>.
+  par défaut: 5 # Ce DPE de départ maximise les deux aides MPR, pratique !
+  aide:
+    G: 7
+    F: 6
+    E: 5
+    D: 4
+    C: 3
+    B: 2
+  schema module: Nécessaire. Un entier de 1 (A) à 7 (G).
+
+projet:
+  titre: Votre projet de rénovation
+
+projet . gain energétique:
+  question: Quel est le gain energétique prévu par votre projet de rénovation ?
+  par défaut: 30 %
+  suggestions:
+    faible: 10 %
+    moyen: 30 %
+    elevé: 50 %
+
+projet . objectif BBC rénovation:
+  question: Votre projet de rénovation respecte-t-il le niveau BBC rénovation ?
+  par défaut: non
+  description: |
+    Labels Bâtiment Basse Consommation en rénovation.
+
+    [Fiche officielle Ministère de l'écologie](https://www.ecologie.gouv.fr/labels-batiment-basse-consommation-en-renovation).
+
+projet . objectif BBC neuf:
+  question: Votre projet de rénovation respecte-t-il le niveau BBC neuf ?
+  par défaut: non
+  description: |
+    Labels Bâtiment Basse Consommation neuf.
+
+projet . DPE visé:
+  titre: Votre futur DPE visé
+  question: Quel DPE visé après rénovation ?
+  par défaut: 2
+  aide:
+    E: 5
+    D: 4
+    C: 3
+    B: 2
+    A: 1
+
+scnénario MPRA:
+  titre: Mon scénario MaPrimeRénov' parcours accompagné
+projet . DPE visé . insuffisant:
+  type: notification
+  sévérité: information
+  formule:
+    toutes ces conditions:
+      - sauts < 2
+      - sauts >= 0
+  description: |
+    Pour être éligible à l'aide à la rénovation globale dite *parcours accompagné*, votre projet doit viser un minimum de 2 sauts de DPE.
+
+    Si vous n'êtes pas prêt à vous lancer dans cette rénovation ambitieuse, vous pouvez continuer la simulation pour estimer votre aide dite *par gestes*.
+
+sauts:
+  titre: Sauts de classe DPE
+  formule: DPE . actuel - projet . DPE visé
+  question: Combien de sauts de classe DPE sont visés ?
+  suggestions:
+    de G à D: 3
+    de F à B: 4
+    de C à A: 2
+  description: |
+    Par exemple, passer d'un DPE G à un DPE D vaut 3 sauts.
+
+projet . DPE visé . erreur:
+  type: notification
+  sévérité: invalide
+  formule: sauts < 0
+  description: |
+    À moins que vous n'ayez prévu de détruire un mur, votre DPE visé n'est pas sensé être moins inférieur à votre DPE actuel 😉
+
+projet . travaux . notification:
+  type: notification
+  sévérité: information
+  formule: travaux < 5000
+  description: |
+    Pour atteindre 2 sauts de DPE, il est en général nécessaire de prévoir une enveloppe de travaux de plusieurs milliers d'€.
+
+projet . enveloppe estimée:
+  formule: par surface * logement . surface
+
+projet . enveloppe estimée . par surface:
+  variations:
+    - si: logement . type = 'maison'
+      alors: maison
+    - sinon: appartement
+
+projet . enveloppe estimée . par surface . appartement:
+  description: |
+    Ces montants sont fournis par l'étude https://premoclasse.fr. Il s'agit d'un ensemble de simulation sur la base de 2 300 logements. 
+
+    Des simulations sont faites sur les possibilités de rénovation, et un chiffre final de cout estimé est calculé pour un jeu de scénarios DPE actuel -> DPE visé. 
+
+    Pour les couples de DPE actuel -> visé qui ne sont pas couverts par l'étude, nous prenons simplement l'estimation du DPE visé disponible supérieur. Donc l'estimation du cout E -> C est celle de E -> B.
+
+    À noter : l'étude n'est pas représentative des logements ! D'où notre réticence à en afficher les résultats comme de bonnes estimations : nous les utilisations uniquement comme la valeur par défaut d'un exemple.
+  variations:
+    - si: DPE . actuel = 3
+      alors:
+        variations:
+          - si: DPE visé = 1
+            alors: 214
+          - sinon: 168
+    - si: DPE . actuel = 4
+      alors:
+        variations:
+          - si: DPE visé = 1
+            alors: 238
+          - sinon: 204
+    - si: DPE . actuel = 5
+      alors:
+        variations:
+          - si: DPE visé = 1
+            alors: 246
+          - sinon: 232
+    - si: DPE . actuel = 6
+      alors:
+        variations:
+          - si: DPE visé = 1
+            alors: 458 # OUCH ! À creuser.
+          - si: DPE visé = 2
+            alors: 282
+          - sinon: 188
+    - si: DPE . actuel = 7
+      alors:
+        variations:
+          - si: DPE visé = 1
+            alors: 321
+          - si: DPE visé = 2
+            alors: 296
+          - sinon: 208
+
+projet . enveloppe estimée . par surface . maison:
+  variations:
+    - si: DPE . actuel = 3
+      alors:
+        variations:
+          - si: DPE visé = 1
+            alors: 242
+          - sinon: 210
+    - si: DPE . actuel = 4
+      alors:
+        variations:
+          - si: DPE visé = 1
+            alors: 288
+          - sinon: 244
+    - si: DPE . actuel = 5
+      alors:
+        variations:
+          - si: DPE visé = 1
+            alors: 301
+          - sinon: 292
+    - si: DPE . actuel = 6
+      alors:
+        variations:
+          - si: DPE visé = 1
+            alors: 310
+          - si: DPE visé = 2
+            alors: 315
+          - sinon: 281
+    - si: DPE . actuel = 7
+      alors:
+        variations:
+          - si: DPE visé = 1
+            alors: 347
+          - si: DPE visé = 2
+            alors: 353
+          - sinon: 335
+
+projet . travaux:
+  titre: Votre enveloppe des travaux
+  question: Quelle est l'enveloppe totale hors taxe (HT) de vos travaux ?
+  groupe de questions: scénario MPRA
+  unité: €
+  suggestions:
+    basse: 10000 €
+    moyenne: 40000 €
+    haute: 70000 €
+  description: |
+    Attention, renseignez l'enveloppe hors TVA. 
+
+    Notez que le taux de TVA des travaux de rénovation énergétique varie en fonction des gestes, principalement de 5,5 % et parfois à 10 %.
+
+projet . travaux . TTC:
+  formule: travaux * 1.055
+  description: Nous considérons par défaut que les travaux de l'enveloppe concernent tous de la performance énergétique, ou des travaux liés tels que définis [sur cette page "TVA à taux réduit"](https://www.anah.gouv.fr/sites/default/files/2024-02/202402_Guide_des_aides_WEBA.pdf#page=32), et donc assujettis à un taux réduit de 5,5 %.
+
+projet . investissement:
+  titre: Votre investissement
+  description: |
+    Le budget dont vous disposez pour investir dans votre projet de rénovation, et qui sera bonifié par les aides si vous y êtes éligible.
+  par défaut: 25000 €
+  formule: travaux . TTC - ampleur . montant
+
+projet . travaux . plafonnés:
+  plafond: plafond
+  valeur: travaux
+
+projet . travaux . plafond:
+  variations:
+    - si: sauts = 2
+      alors: 30000 €
+    - si: sauts >= 3
+      alors: 40000 €
+
+  # Si l'on a besoin dans un second temps d'avoir l'âge exact
+  # âge >= 15
+  ## variations:
+  #TODO outre-mer :  MPR accompagné est réservée à un logement en France métropolitaine
+  #TODO question des mois
+  ## - si: outre-mer # TODO question : il n'y a pas de condition d'outre-mer pour MPR accompagné. C'est étrange, je me demande même si cette aide est éligible en outre-mer ?
+  ## alors: âge >= 2
+  ## - sinon:
+
+projet . définition:
+  titre: Votre projet
+  question: Vos aides sont prêtes ! Comment souhaitez-vous les voir ?
+  sous-titre: On calcule votre éligibilité aux aides, et si vous savez déjà quels travaux faire, on rend cela plus concret !
+  une possibilité parmi:
+    possibilités:
+      - 'travaux connus'
+      - 'travaux inconnus'
+projet . définition . travaux connus:
+  valeur: '"travaux connus"'
+  titre: 'Voir les aides adaptées à mes travaux'
+  sous-titre: Recommandé, 3 questions rapides sur vos travaux
+projet . définition . travaux inconnus:
+  valeur: '"travaux inconnus"'
+  titre: 'Voir toutes les aides'
+  sous-titre: Immédiat, non personnalisé
+
+projet . définition . catégories travaux envisagées:
+  applicable si: définition = 'travaux connus'
+  question: Sur quoi souhaitez-vous intervenir ?
+projet . définition . travaux envisagés:
+  applicable si: définition = 'travaux connus'
+  question: Sur quoi souhaitez-vous intervenir ?
+projet . définition . travaux envisagés chauffage:
+  question: 'Chauffages : quelles options vous intéressent ?'
+
+conditions communes:
+  titre: Conditions d'éligibilité de base
+  toutes ces conditions:
+    - vous . propriétaire . condition
+    # - logement . au moins 15 ans # était précédemment commune à MPRA et MPRG, mais l'outre-mer introduit la possibilité de + de 2 ans pour MPRG (MRA pas dispo en outre-mer)
+    - logement . résidence principale
+
+MPR:
+  marque: "MaPrimeRénov'"
+  titre: Choix de l'aide
+Coup de pouce:
+  marque: 'Coup de pouce Chauffage'
+parcours d'aide:
+  question: Quel est votre besoin
+  description: |
+
+    Les aides à la rénovation sont séparées en trois volets. 
+
+    Vous devez choisir entre :
+      - une rénovation énergétique d'ampleur (MaPrimeRénov Parcours Accompagnée) ou à la carte (MaPrimeRénov Parcours par geste). 
+      - une rénovation pour favoriser l'autonomie de la personne (MaPrimeAdapt')
+      - une rénovation pour assurer la sécurité et la salubrité du logement (Ma Prime Logement Décent) 
+
+    Le parcours rénovation d'ampleur est constitué essentiellement de l'aide MaPrimeRénov' parcours accompagné, d'aides locales et dans une moindre mesure de CEE pour les ménages non éligibles à MaPrimeRénov'.
+  par défaut:
+    texte: rénovation énergétique
+  une possibilité parmi:
+    possibilités:
+      - 'rénovation énergétique'
+      - 'autonomie'
+      - 'sécurité salubrité'
+
+parcours d'aide . rénovation énergétique:
+  titre: Rénovation énergétique
+  sous-titre: Réduire ma facture d'énergie ou améliorer le confort de mon logement
+  dispositifs:
+    - MPR . accompagnée . montant
+    - MPR . accompagnée . prise en charge MAR . montant
+    - aides locales . montant
+    - CEE . rénovation d'ampleur . montant
+    - ampleur . prime individuelle copropriété . montant
+    - locavantage . montant
+    - PTZ . montant
+    - PAR . montant
+    - denormandie . montant
+    - taxe foncière . montant
+parcours d'aide . autonomie:
+  titre: Autonomie de la personne
+  sous-titre: Adapter mon logement au vieillissement ou à une situation de handicap
+  dispositifs:
+    - mpa . montant
+    - locavantage . montant
+    - tva réduite
+    - crédit d'impôt . montant
+    - aides locales
+    - pah
+    - pch . montant
+    - apa
+    - aeeh
+parcours d'aide . sécurité salubrité:
+  titre: Sécurité, salubrité
+  sous-titre: Mettre mon logement aux normes de sécurité et de salubrité
+  dispositifs:
+    - MPLD . montant
+
+MPR . non accompagnée . pourcentage d'écrêtement:
+  description: |
+    Semble s'appliquer sur la dépense HT. Ce n'est pas dit explicitement, mais on le déduit du fait que le TTC est clairement précisé pour l'écrêtement de MPR accompagnée.
+
+    Pour le détail de cet écrêtement, voir [cette page du guide complet PDF Anah](https://www.anah.gouv.fr/sites/default/files/2024-02/202402_Guide_des_aides_WEBA.pdf#page=24).
+  variations:
+    - si: ménage . revenu . classe = 'très modeste'
+      alors: 90 %
+    - si: ménage . revenu . classe = 'modeste'
+      alors: 75 %
+    - si: ménage . revenu . classe = 'intermédiaire'
+      alors: 60 %
+    - sinon: 40 %
+
+MPR . non accompagnée . conditions excluantes:
+  une de ces conditions:
+    - ménage . revenu . classe = "supérieure"
+    - outre-mer . COM
+
+MPR . non accompagnée . confirmation:
+  question: Confirmation de vos choix de gestes
+  par défaut: oui
+
+MPR . non accompagnée:
+  titre: MaPrimeRénov' **par geste**
+  illustration: mpg.svg
+  alias: Parcours par geste
+  interface:
+    motivation: J'ai une idée précise des travaux à réaliser
+    avantages:
+      - Un choix à la carte dans un bouquet de travaux subventionnés
+
+  description: |
+    Alternative au parcours accompagné, vous pouvez être aidé pour rénover plus progressivement votre logement. 
+
+    En optant pour un chauffage décarboné seul, ou en le complétant avec des gestes d'isolation.
+
+    [Tous les détails](https://www.anah.gouv.fr/sites/default/files/2023-12/202401_guide-aides-financieres-2024.pdf#page=15).
+
+MPR . non accompagnée . montant:
+  titre: Aide non accompagnée
+  valeur: gestes . montant
+  applicable si: conditions
+  non applicable si: conditions excluantes
+
+MPR . non accompagnée . éligible:
+  titre: Éligible parcours par gestes
+  formule:
+    toutes ces conditions:
+      - conditions
+      - conditions excluantes = non
+
+MPR . non accompagnée . condition âge logement:
+  variations:
+    - si: outre-mer
+      alors: logement . au moins 2 ans
+    - sinon: logement . au moins 15 ans
+
+MPR . non accompagnée . conditions:
+  valeur:
+    toutes ces conditions:
+      - conditions communes
+      - condition âge logement
+
+gestes: # gestes.yaml
+  titre: Parcours par gestes
+
+somme à engager:
+  plancher: 0
+  valeur: projet . travaux - (MPR . accompagnée . avance + 50000)
+
+logement . loyer social ou très social:
+  question: Le loyer du bail de location est-il "social" ou "très social" ?
+  par défaut: non
+  description: |
+    Le loyer dit "social" correspond à un loyer de 30 % en dessous des loyers du marché. Voir <a href="https://www.service-public.fr/particuliers/vosdroits/F2541" target="_blank" title="la fiche service-public.fr à propos du conventionnement Anah - nouvelle fenêtre">la fiche service-public.fr à propos du conventionnement Anah</a>.

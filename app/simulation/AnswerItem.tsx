@@ -1,0 +1,77 @@
+import Link from 'next/link'
+import { CTA } from '@/components/UI'
+import {
+  encodeDottedName,
+  encodeSituation,
+} from '@/components/publicodes/situationUtils'
+import { getRuleTitle } from '@/components/publicodes/utils'
+import { displayRevenuLabel } from '@/components/RevenuInput'
+import DPELabel from '@/components/dpe/DPELabel'
+
+export default function AnswerItem({
+  answer,
+  rules,
+  engine,
+  situation,
+  setSearchParams,
+  rawAnsweredQuestions,
+  setIsOpen,
+}) {
+  const handleLinkClick = () => {
+    setTimeout(() => setIsOpen(false), 200)
+  }
+
+  return (
+    <>
+      <span>{getRuleTitle(answer, rules)}</span>
+      <Link
+        className="fr-btn fr-btn--secondary fr-btn--sm fr-mt-0"
+        onClick={handleLinkClick}
+        href={setSearchParams(
+          {
+            question: encodeDottedName(answer),
+            ...encodeSituation(
+              situation,
+              false,
+              rawAnsweredQuestions.filter((q) => q !== answer),
+            ),
+          },
+          'url',
+        )}
+      >
+        <FormattedAnswer
+          {...{
+            answer,
+            situation,
+            engine,
+            rules,
+          }}
+        />
+      </Link>
+    </>
+  )
+}
+
+function FormattedAnswer({ answer, situation, engine, rules }) {
+  let unit = rules[answer]?.unité
+  const value = situation[answer]
+
+  let formattedValue
+  if (answer === 'ménage . revenu') {
+    formattedValue = displayRevenuLabel(situation, engine, parseInt(value) + 1)
+    unit = ''
+  } else if (['ménage . commune', 'logement . commune'].includes(answer)) {
+    formattedValue = `${situation[answer + ' . nom'].replaceAll('"', '')}  (${situation[answer.replace('commune', '') + 'code département'].replaceAll('"', '')})`
+  } else if (answer === 'DPE . actuel') {
+    formattedValue = <DPELabel index={value - 1} />
+  } else {
+    formattedValue = value?.replace(/['"]+/g, '')
+  }
+
+  return (
+    <>
+      {formattedValue} {unit}
+      {unit === 'personne' && value > 1 ? 's' : ''}
+    </>
+  )
+}

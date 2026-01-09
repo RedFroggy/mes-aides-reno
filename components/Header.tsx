@@ -1,0 +1,52 @@
+'use client'
+
+import { usePathname } from 'next/navigation'
+import { Header as DsfrHeader } from '@codegouvfr/react-dsfr/Header'
+
+export default function Header() {
+  const pathname = usePathname()
+  if (pathname.startsWith('/module/') && pathname.endsWith('integration'))
+    return
+
+  return (
+    <DsfrHeader
+      brandTop={
+        <>
+          RÉPUBLIQUE
+          <br />
+          FRANCAISE
+        </>
+      }
+      homeLinkProps={{
+        href: '/',
+        title: 'Accueil - Mes Aides Réno',
+      }}
+      id="fr-header-with-horizontal-operator-logo"
+      operatorLogo={{
+        alt: 'Logo Mes Aides Réno',
+        imgUrl: '/logo-service-de-FR.svg',
+        orientation: 'horizontal',
+      }}
+      quickAccessItems={[
+        {
+          text: 'Les aides',
+          linkProps: {
+            href: '/aides',
+          },
+        },
+        {
+          text: 'Contact',
+          linkProps: {
+            href: '/contact',
+          },
+        },
+        {
+          text: 'Devenir partenaire',
+          linkProps: {
+            href: '/devenir-partenaire',
+          },
+        },
+      ]}
+    />
+  )
+}
