@@ -343,7 +343,7 @@ export const HistoriqueVersion = () => (
         <a
           rel="noopener external"
           className="fr-link"
-          href="https://github.com/betagouv/reno/pull/281"
+          href={`${process.env.NEXT_PUBLIC_REPOSITORY_URL}/pull/281`}
         >
           par ici
         </a>{' '}
@@ -384,7 +384,7 @@ export const ContactIntegration = ({ type }) => (
     </p>
     <Link
       className="fr-btn fr-icon-mail-line fr-btn--icon-left"
-      href="mailto:contact@mesaidesreno.fr"
+      href="mailto:mesaidesreno@anah.gouv.fr"
     >
       Nous contacter
     </Link>

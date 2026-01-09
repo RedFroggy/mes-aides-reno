@@ -57,52 +57,19 @@ export default async function FooterContent() {
             },
           },
         ]}
-        contentDescription=""
         license={
           <>
             Sauf mention contraire, tous les contenus de ce site sont sous{' '}
             <a
               title="licence MIT  - nouvelle fenêtre"
-              href="https://github.com/betagouv/reno/blob/master/LICENSE"
+              href={`${process.env.NEXT_PUBLIC_REPOSITORY_URL}/blob/master/LICENSE`}
               target="_blank"
             >
               licence MIT
             </a>{' '}
           </>
         }
-        contentDescription={
-          <>
-            MesAidesRéno est propulsé par{' '}
-            <a
-              title="La direction interministérielle du numérique  - nouvelle fenêtre"
-              href="https://www.numerique.gouv.fr/numerique-etat/dinum/"
-              rel="noopener external"
-              target="_blank"
-            >
-              la direction interministérielle du numérique
-            </a>{' '}
-            en partenariat avec{' '}
-            <a
-              title="l'ANAH  - nouvelle fenêtre"
-              href="https://www.anah.gouv.fr"
-              rel="noopener external"
-              target="_blank"
-            >
-              l'ANAH
-            </a>
-            .
-            <br />
-            <a
-              title="Code source MesAidesRéno sur Github - nouvelle fenêtre"
-              href="https://github.com/betagouv/reno"
-              rel="noopener external"
-              target="_blank"
-            >
-              Le code source est disponible
-            </a>{' '}
-            en licence libre
-          </>
-        }
+        //contentDescription={}
         operatorLogo={{
           alt: 'Logo Mes Aides Réno',
           imgUrl: '/logo.svg',

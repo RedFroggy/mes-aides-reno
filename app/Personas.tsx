@@ -172,7 +172,7 @@ const PersonaCard = ({ engine, persona, personaIndex }) => {
           <a
             rel="noopener external"
             className="fr-link"
-            href="https://github.com/betagouv/reno/blob/master/app/personas.yaml"
+            href={`${process.env.NEXT_PUBLIC_REPOSITORY_URL}/blob/master/app/personas.yaml`}
           >
             Inspecter
           </a>

@@ -2,15 +2,18 @@
 import { init, push } from '@socialgouv/matomo-next'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { Suspense, useEffect, useState } from 'react'
-
-const MATOMO_URL = 'https://stats.beta.gouv.fr'
-const MATOMO_SITE_ID = '101'
-
 const MatomoComponent = () => {
   const [initialised, setInitialised] = useState(false)
   useEffect(() => {
-    if (MATOMO_URL && MATOMO_SITE_ID && !initialised) {
-      init({ url: MATOMO_URL, siteId: MATOMO_SITE_ID })
+    if (
+      process.env.NEXT_PUBLIC_MATOMO_URL &&
+      process.env.NEXT_PUBLIC_MATOMO_SITE_ID &&
+      !initialised
+    ) {
+      init({
+        url: process.env.NEXT_PUBLIC_MATOMO_URL,
+        siteId: process.env.NEXT_PUBLIC_MATOMO_SITE_ID,
+      })
     }
     return () => {
       setInitialised(true)

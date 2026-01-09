@@ -54,17 +54,6 @@ export default function APIDoc() {
           Nous n'avons pas non plus testé le site avec des utilisateurs dans une
           optique d'accessibilité.
         </p>
-        <p>
-          Le code du site{' '}
-          <a
-            rel="noopener exteral"
-            className="fr-link"
-            href="https://github.com/betagouv/reno"
-          >
-            est intégralement ouvert
-          </a>
-          , n'hésitez pas à nous faire des retours.
-        </p>
       </PageBlock>
     </>
   )

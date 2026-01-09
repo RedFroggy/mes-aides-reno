@@ -14,6 +14,7 @@ docker run --rm \
   --allow-read \
   --allow-net \
   --allow-write \
+  --allow-env \
   lib/computeTaxeFoncièrePopulation.ts
 
-echo "✓ Done! Output written to data/exonération-taxe-foncière-population.csv"
+echo "✓ Done! Output written to data/exoneration_taxe_fonciere_population.csv"

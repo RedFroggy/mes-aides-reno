@@ -123,7 +123,7 @@ export default function Module({}) {
             <a
               rel="noopener external"
               className="fr-link"
-              href="https://github.com/betagouv/reno/pull/281"
+              href={`${process.env.NEXT_PUBLIC_REPOSITORY_URL}/pull/281`}
             >
               par ici
             </a>{' '}

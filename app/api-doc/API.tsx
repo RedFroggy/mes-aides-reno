@@ -46,11 +46,10 @@ export default function API() {
               <strong>
                 <u>Accompagnement sur-mesure</u>
               </strong>
-              :<br /> Une personne de l'équipe de développement peut vous assister en live dans l'intégration.
-
-              D'expérience, 45 minutes suffisent. C'est votre souhait ? Merci
-              d’adresser votre demande{' '}
-              <a href="mailto:contact@mesaidesreno.fr">ici</a>. Nous prendrons
+              :<br /> Une personne de l'équipe de développement peut vous
+              assister en live dans l'intégration. D'expérience, 45 minutes
+              suffisent. C'est votre souhait ? Merci d’adresser votre demande{' '}
+              <a href="mailto:mesaidesreno@anah.gouv.fr">ici</a>. Nous prendrons
               contact avec vous rapidement.
             </li>
             <li
@@ -75,7 +74,7 @@ export default function API() {
           d'utilisation. Nous vous demandons simplement de nous{' '}
           <a
             className="fr-link"
-            href="mailto:contact@mesaidesreno.fr?subject=Demande de token API"
+            href="mailto:mesaidesreno@anah.gouv.fr?subject=Demande de token API"
           >
             informer de son utilisation
           </a>
@@ -99,7 +98,7 @@ export default function API() {
           title="notre modèle de calcul - nouvelle fenêtre"
           rel="noopener external"
           className="fr-link"
-          href="https://github.com/betagouv/reno/tree/master/app/r%C3%A8gles"
+          href={`${process.env.NEXT_PUBLIC_REPOSITORY_URL}/tree/master/app/règles`}
           target="_blank"
         >
           notre modèle de calcul
@@ -149,7 +148,7 @@ export default function API() {
           title="modèle de calcul - nouvelle fenêtre"
           rel="noopener external"
           className="fr-link"
-          href="https://github.com/betagouv/reno/tree/master/app/r%C3%A8gles"
+          href={`${process.env.NEXT_PUBLIC_REPOSITORY_URL}/tree/master/app/règles`}
         >
           modèle de calcul
         </a>

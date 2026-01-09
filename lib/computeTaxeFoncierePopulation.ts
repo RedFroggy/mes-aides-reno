@@ -1,3 +1,5 @@
+#!/usr/bin/env -S deno run --allow-read --allow-net --allow-write
+
 import { parse, stringify } from 'jsr:@std/csv'
 
 interface TaxeFonciereCommune {

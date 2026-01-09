@@ -1,5 +1,3 @@
-import createMDX from '@next/mdx'
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   generateBuildId: async () => {
@@ -12,23 +10,15 @@ const nextConfig = {
   compiler: {
     styledComponents: true,
   },
-  eslint: {
-    // Warning: This allows production builds to successfully complete even if
-    // your project has ESLint errors.
-    ignoreDuringBuilds: true,
-  },
-  typescript: {
-    // !! WARN !!
-    // Dangerously allow production builds to successfully complete even if
-    // your project has type errors.
-    // !! WARN !!
-    ignoreBuildErrors: true,
-  },
-  webpack: (config, options) => {
+  eslint: { ignoreDuringBuilds: true },
+  typescript: { ignoreBuildErrors: true },
+
+  webpack: (config) => {
     config.module.rules.push({
       test: /(\.ya?ml$)|\.publicodes/,
       use: 'yaml-loader',
     })
+
     config.module.rules.push({
       test: /\.csv$/,
       loader: 'csv-loader',
@@ -38,25 +28,28 @@ const nextConfig = {
         skipEmptyLines: true,
       },
     })
+
     config.module.rules.push({
       test: /\.woff2$/,
-      type: "asset/resource"
-    });
-    return config;
+      type: 'asset/resource',
+    })
+
+    return config
   },
+
   async headers() {
     return [
       // Security headers (RGS compliance)
-      {
-        source: '/:path*',
-        headers: [
-          { key: 'X-Frame-Options', value: 'DENY' },
-          { key: 'X-Content-Type-Options', value: 'nosniff' },
-          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-          { key: 'X-XSS-Protection', value: '1; mode=block' },
-          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
-        ],
-      },
+      // {
+      //   source: '/:path*',
+      //   headers: [
+      //     { key: 'X-Frame-Options', value: 'DENY' },
+      //     { key: 'X-Content-Type-Options', value: 'nosniff' },
+      //     { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+      //     { key: 'X-XSS-Protection', value: '1; mode=block' },
+      //     { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+      //   ],
+      // },
       // CORS headers for API routes
       {
         source: '/api/:path*',
@@ -76,26 +69,17 @@ const nextConfig = {
       },
     ]
   },
+
   async rewrites() {
     return [{ source: '/feed.xml', destination: '/_next/static/feed.xml' }]
   },
+
   async redirects() {
-    return [
-      {
-        source: '/guide',
-        destination: '/guide.html',
-        permanent: false,
-      },
-    ]
+    return [{ source: '/guide', destination: '/guide.html', permanent: false }]
   },
   output: 'standalone',
   images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'commons.wikimedia.org',
-      },
-    ],
+    remotePatterns: [{ protocol: 'https', hostname: 'commons.wikimedia.org' }],
   },
 }
 

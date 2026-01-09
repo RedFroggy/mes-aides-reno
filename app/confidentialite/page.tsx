@@ -2,6 +2,7 @@ import { PageBlock } from '@/components/UI'
 import { StartDsfrOnHydration } from '@/src/dsfr-bootstrap'
 import Breadcrumb from '@codegouvfr/react-dsfr/Breadcrumb'
 import { Metadata } from 'next/types'
+import { readableUrl } from '@/utils/strings'
 
 export const metadata: Metadata = {
   title: 'Confidentialité - Mes aides réno',
@@ -34,7 +35,11 @@ export default function APIDoc() {
         <h2>Traceurs</h2>
         <p>
           Nous utilisons le traceur libre Matomo, via l'instance hébergée par
-          les services de l'État sur stats.beta.gouv.fr.
+          les services de l'État sur{' '}
+          <a href={process.env.NEXT_PUBLIC_MATOMO_URL}>
+            {readableUrl(process.env.NEXT_PUBLIC_MATOMO_URL)}
+          </a>
+          .
         </p>
         <p>
           Quand vous faites une simulation sur Mes Aides Réno, et que vous
@@ -54,8 +59,8 @@ export default function APIDoc() {
         </p>
         <h2>Refuser le suivi de votre usage du site</h2>
         <div id="matomo-opt-out"></div>
-        <script src="https://stats.beta.gouv.fr/index.php?module=CoreAdminHome&action=optOutJS&divId=matomo-opt-out&language=auto&showIntro=1"></script>
-
+        <script src={`${process.env.NEXT_PUBLIC_MATOMO_URL}index.php?module=CoreAdminHome&action=optOutJS&divId=matomo-opt-out&language=auto&showIntro=1`}></script>
+        <br />
         <h2>Partage des données de simulation à des sites Web tiers</h2>
         <p>
           Dans le cadre de l'intégration de Mes Aides Réno comme un module de
@@ -72,11 +77,13 @@ export default function APIDoc() {
         </p>
         <p>
           Dans le cadre de l'intégration particulière de notre simulateur sur le
-          site jagis.beta.gouv.fr, nous autorisons le partage des données de
-          simulation au système d'information du service J'agis pour
-          l'accomplissement de ses missions de service public, conformément à
-          l'[article
-          premier](https://www.legifrance.gouv.fr/jorf/article_jo/JORFARTI000033202940)
+          site <a href="http://jagis.beta.gouv.fr">jagis.beta.gouv.fr</a>, nous
+          autorisons le partage des données de simulation au système
+          d'information du service J'agis pour l'accomplissement de ses missions
+          de service public, conformément à l'
+          <a href="https://www.legifrance.gouv.fr/jorf/article_jo/JORFARTI000033202940">
+            article premier
+          </a>{' '}
           de la loi pour une République numérique.
         </p>
         <p>
@@ -85,26 +92,6 @@ export default function APIDoc() {
           du numérique (DINUM) dans le cadre de l’intégration du simulateur
           d’aides via iFrame sont alors responsables du traitement des données
           partagées.
-        </p>
-        <h2>Serveur</h2>
-        <p>
-          Notre serveur est géré par la société française{' '}
-          <a
-            className="fr-link"
-            rel="noopener external"
-            href="https://annuaire-entreprises.data.gouv.fr/entreprise/scalingo-808665483"
-          >
-            Scalingo
-          </a>
-          , et est physiquement localisé en France. Voici le{' '}
-          <a
-            className="fr-link"
-            rel="noopener external"
-            href="https://scalingo.com/fr/contrat-gestion-traitements-donnees-personnelles"
-          >
-            Contrat de Gestion des Traitements de Données Personnelles
-          </a>{' '}
-          de Scalingo.
         </p>
       </PageBlock>
     </>

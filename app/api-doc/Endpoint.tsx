@@ -176,7 +176,7 @@ export default function Endpoint({ type }) {
             title="encodeSituation - nouvelle fenêtre"
             rel="noopener external"
             className="fr-link"
-            href="https://github.com/betagouv/reno/blob/master/components/publicodes/situationUtils.ts#L55"
+            href={`${process.env.NEXT_PUBLIC_REPOSITORY_URL}/blob/master/components/publicodes/situationUtils.ts#L55`}
           >
             encodeSituation
           </a>
