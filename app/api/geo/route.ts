@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 
-const NEXT_PUBLIC_GEO_API_BASE_URL = process.env.NEXT_PUBLIC_GEO_API_BASE_URL as string;
+const NEXT_PUBLIC_GEO_API_BASE_URL = process.env.NEXT_PUBLIC_GEO_API_BASE_URL;
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',

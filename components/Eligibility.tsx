@@ -21,7 +21,7 @@ import { useAides } from './ampleur/useAides'
 import { AvanceTMO } from './mprg/BlocAideMPR'
 import { decodeDottedName } from './publicodes/situationUtils'
 import useIsInIframe from './useIsInIframe'
-import { categories, getCurDate, getRulesByCategory } from './utils'
+import { categories, getCurDate, getRulesByCategoryByTypes } from './utils'
 import { textValueEquality } from './publicodes/utils'
 import useIsMobile from './useIsMobile'
 import ExplicationCoproprieteContent from './copropriete/ExplicationCoproprieteContent'
@@ -277,10 +277,6 @@ export function EligibilityRenovationEnergetique({
   const hasMPRA =
     aides.find((a) => a.baseDottedName == 'MPR . accompagnée')?.status === true
 
-  const isTMO =
-    engine.setSituation(situation).evaluate('ménage . revenu . classe')
-      .nodeValue == 'très modeste'
-
   const prets = aides.filter(
     (aide) => aide.status !== false && aide.type == 'prêt',
   )
@@ -362,19 +358,6 @@ export function EligibilityRenovationEnergetique({
                       noDescription: true,
                     }}
                   />
-                  {!isTMO && (
-                    <div className="fr-alert fr-alert--info">
-                      <div className="fr-alert__title">
-                        Qui peut avoir MaPrimeRénov’ parcours accompagné ?
-                      </div>
-                      <p>
-                        Jusqu'au 31 décembre 2025 seuls les ménages très
-                        modestes peuvent en bénéficier. L’aide pourrait réouvrir
-                        aux autres catégories de revenus début 2026.
-                        <Share text="" showWithAnswer={false} align="left" />
-                      </p>
-                    </div>
-                  )}
                 </div>
                 <p className="fr-h4">
                   Sinon, optez pour les aides par gestes individuels :
@@ -775,7 +758,7 @@ export function TravauxInconnus({
       [category]: !prev[category],
     }))
   }
-  const rulesByCategory = getRulesByCategory(rules, 'MPR')
+  const rulesByCategory = getRulesByCategoryByTypes(rules, ['MPR','CEE']);
   return Object.keys(rulesByCategory).map((category) => (
     <div key={category}>
       <h3 className="fr-mt-10v fr-h5">{category}</h3>
