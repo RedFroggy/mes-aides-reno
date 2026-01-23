@@ -1,0 +1,43 @@
+name: Deploy library to registry
+
+on:
+  workflow_dispatch:
+    inputs:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    name: Build and release
+    runs-on: ubuntu-24.04
+    env:
+      NODE_OPTIONS: '--max-old-space-size=4096'
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.17.0
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@redfroggy'
+
+      - name: Git checkout for source code analysis
+        uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        run: npm install --force
+
+      - name: Cache Node.js modules
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Release library to private registry
+        if: github.ref == 'refs/heads/main'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          npm run build
+          sed -i '0,/{/s/{/{\n  "type": "module",/' package.json
+          npm publish
