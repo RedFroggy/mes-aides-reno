@@ -8,6 +8,13 @@ permissions:
   contents: read
   packages: write
 
+env:
+  NEXT_PUBLIC_COMMIT_ID: ${{ github.sha }}
+  MAIR_DG_ORT_PAGE_URL: 'https://www.data.gouv.fr/datasets/liste-des-communes-couvertes-par-des-operations-de-revitalisation-de-territoire'
+  MAIR_DG_ORT_DATA_URL: 'https://www.data.gouv.fr/api/1/datasets/r/17a6bc80-297a-4dc2-b98c-3edc12161bc0'
+  MAIR_DG_COEUR_VILLE_PAGE_URL: 'https://www.data.gouv.fr/datasets/listes-des-villes-action-coeur-de-ville'
+  MAIR_DG_COEUR_VILLE_DATA_URL: 'https://www.data.gouv.fr/api/1/datasets/r/97d44c4a-fbf4-4545-8940-ea3a51aa821a'
+
 jobs:
   build:
     name: Build and release
