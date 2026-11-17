@@ -32,7 +32,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install Dependencies
-        run: npm install --force
+        run: npm install --force --legacy-peer-deps
 
       - name: Cache Node.js modules
         uses: actions/cache@v4
