@@ -3,6 +3,7 @@
   "version": "1.0.1",
   "scripts": {
     "build": "next build",
+    "build:publicodes": "node --import ./scripts/publicodes-register.mjs scripts/build-publicodes.mts",
     "predev": "npx react-dsfr update-icons && docker compose up -d",
     "dev": "next dev",
     "prettier": "prettier --write --ignore-unknown .",

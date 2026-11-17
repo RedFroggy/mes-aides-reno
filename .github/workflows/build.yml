@@ -8,23 +8,14 @@ permissions:
   contents: read
   packages: write
 
-env:
-  NEXT_PUBLIC_COMMIT_ID: ${{ github.sha }}
-  MAIR_DG_ORT_PAGE_URL: 'https://www.data.gouv.fr/datasets/liste-des-communes-couvertes-par-des-operations-de-revitalisation-de-territoire'
-  MAIR_DG_ORT_DATA_URL: 'https://www.data.gouv.fr/api/1/datasets/r/17a6bc80-297a-4dc2-b98c-3edc12161bc0'
-  MAIR_DG_COEUR_VILLE_PAGE_URL: 'https://www.data.gouv.fr/datasets/listes-des-villes-action-coeur-de-ville'
-  MAIR_DG_COEUR_VILLE_DATA_URL: 'https://www.data.gouv.fr/api/1/datasets/r/97d44c4a-fbf4-4545-8940-ea3a51aa821a'
-
 jobs:
   build:
     name: Build and release
     runs-on: ubuntu-24.04
-    env:
-      NODE_OPTIONS: '--max-old-space-size=4096'
     steps:
       - uses: actions/setup-node@v4
         with:
-          node-version: 22.17.0
+          node-version: 22.18.0 # >= 22.18 required for native TypeScript type stripping
           registry-url: 'https://npm.pkg.github.com'
           scope: '@redfroggy'
 
@@ -40,13 +31,9 @@ jobs:
           path: ~/.npm
           key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
 
-      - name: Build library
+      - name: Build publicodes model
         if: github.ref == 'refs/heads/main'
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
-        run: |
-          npm run build
+        run: npm run build:publicodes
 
       - name: Release library to private registry
         if: github.ref == 'refs/heads/main'
