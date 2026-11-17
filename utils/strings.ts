@@ -3,4 +3,4 @@
  * @param url
  */
 export const readableUrl = (url: string): string =>
-  url.replace(/^https?:\/\//, '').replace(/\/$/, '')
+  url?.replace(/^https?:\/\//, '').replace(/\/$/, '')

@@ -10,7 +10,7 @@ import {
   CommuneLogement,
 } from '@/app/module/AmpleurQuestions'
 import rules from '@/app/règles/rules'
-import rulesInteretEmprunt from '@/app/règles/intérêt-emprunt.publicodes'
+import rulesInteretEmprunt from '@/app/règles/interet-emprunt.publicodes'
 import Publicodes from 'publicodes'
 import { EligibilityResult } from '@/components/EligibilityResult'
 import useSetSearchParams from '@/components/useSetSearchParams'

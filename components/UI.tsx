@@ -71,7 +71,7 @@ export const ConditionEligibiliteUI = ({ children }) => {
           __html: children,
         }}
       />
-    </>,
+    </>
   )
 }
 

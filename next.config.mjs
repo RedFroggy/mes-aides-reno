@@ -10,9 +10,30 @@ const nextConfig = {
   compiler: {
     styledComponents: true,
   },
-  eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
 
+  turbopack: {
+    rules: {
+      '*.yaml': { loaders: ['yaml-loader'], as: '*.js' },
+      '*.yml': { loaders: ['yaml-loader'], as: '*.js' },
+      '*.publicodes': { loaders: ['yaml-loader'], as: '*.js' },
+      '*.csv': {
+        loaders: [
+          {
+            loader: 'csv-loader',
+            options: {
+              dynamicTyping: true,
+              header: true,
+              skipEmptyLines: true,
+            },
+          },
+        ],
+        as: '*.js',
+      },
+    },
+  },
+
+  // Kept for `next build --webpack` fallback
   webpack: (config) => {
     config.module.rules.push({
       test: /(\.ya?ml$)|\.publicodes/,
