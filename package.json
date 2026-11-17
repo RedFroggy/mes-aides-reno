@@ -1,6 +1,6 @@
 {
   "name": "@redfroggy/mesaidesreno",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "scripts": {
     "build": "next build",
     "predev": "npx react-dsfr update-icons && docker compose up -d",
